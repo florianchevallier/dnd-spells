@@ -60,17 +60,66 @@ L'app est accessible sur **http://localhost:5173**
 
 ## 🐳 Déploiement en production
 
-### Build et démarrage avec Docker Compose
+### CI/CD automatique (GitHub Actions)
 
+Le projet utilise GitHub Actions pour automatiser le déploiement :
+
+1. **Push un tag de version** :
 ```bash
-# Build l'image et lance l'app + MariaDB
-docker-compose up -d
-
-# Seed la base (première fois seulement)
-docker-compose exec app npm run seed /path/to/csv
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
-L'app est accessible sur **http://localhost:3000**
+2. GitHub Actions va automatiquement :
+   - Valider le code (typecheck + build)
+   - Builder l'image Docker en multi-stage
+   - Pousser vers le registry Docker (`registry.paladin.ovh`)
+   - Déclencher le déploiement via webhook
+
+**Secrets GitHub requis** :
+- `REGISTRY_PASSWORD` : Authentification Docker registry
+- `UPDATE_TOKEN` : Token pour le webhook de déploiement
+
+### Déploiement manuel avec Docker Compose
+
+#### Configuration initiale
+
+1. **Créer le réseau Traefik** (première fois seulement) :
+```bash
+docker network create traefik-network
+```
+
+2. **Configurer les variables d'environnement** :
+```bash
+cp .env.production.example .env
+# Éditer .env avec vos valeurs
+```
+
+Variables requises :
+```env
+DB_PASSWORD=<mot_de_passe_securise>
+DB_ROOT_PASSWORD=<mot_de_passe_root>
+TRAEFIK_HOST=dnd-spells.yourdomain.com
+```
+
+#### Lancement
+
+```bash
+# Build et démarrage (avec Traefik + Let's Encrypt SSL)
+docker-compose -f docker-compose.prod.yml up -d
+
+# Voir les logs
+docker-compose -f docker-compose.prod.yml logs -f app
+
+# Arrêter
+docker-compose -f docker-compose.prod.yml down
+```
+
+**Notes** :
+- Les migrations Drizzle sont exécutées automatiquement au démarrage
+- SSL/TLS configuré automatiquement via Traefik + Let's Encrypt
+- Logs avec rotation automatique (10MB max, 3 fichiers)
+- Redémarrage automatique en cas d'échec
 
 ---
 

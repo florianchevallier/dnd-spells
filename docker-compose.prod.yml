@@ -1,0 +1,66 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: prod
+    container_name: dnd-spells
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-dnd_spells}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-dnd_spells}
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.dnd-spells.rule=Host(`${TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.dnd-spells.entrypoints=websecure'
+      - 'traefik.http.routers.dnd-spells.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.dnd-spells.loadbalancer.server.port=3000'
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:3000']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  db:
+    image: mariadb:11
+    container_name: dnd-spells-db
+    environment:
+      - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-rootpassword}
+      - MARIADB_DATABASE=${DB_NAME:-dnd_spells}
+      - MARIADB_USER=${DB_USER:-dnd_spells}
+      - MARIADB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mariadb-admin', 'ping', '-h', 'localhost', '--silent']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: always
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+volumes:
+  mariadb_data:
+
+networks:
+  default:
+    name: traefik-network
+    external: true

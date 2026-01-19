@@ -33,6 +33,73 @@ docker-compose up -d           # Start app + MariaDB in production
 docker-compose exec app npm run seed /path/to/csv
 ```
 
+## Deployment
+
+### CI/CD Pipeline
+The project uses GitHub Actions for continuous integration and deployment:
+
+- **CI Workflow** (`.github/workflows/ci.yml`): Runs on all branches and PRs
+  - Type checking with `npm run typecheck`
+  - Production build validation
+
+- **Deploy Workflow** (`.github/workflows/deploy.yml`): Triggered on version tags (`v*.*.*`)
+  - Pre-deployment validation
+  - Docker multi-stage build (target: `prod`)
+  - Push to Docker registry (`registry.paladin.ovh`)
+  - Automatic deployment via webhook
+
+### Docker Configuration
+
+The project uses a multi-stage Dockerfile:
+- **base**: Minimal Node.js 22 with system dependencies
+- **deps**: Install all dependencies
+- **dev**: Development environment with hot reload
+- **builder**: Build production assets
+- **prod**: Optimized production image with automatic migrations
+
+### Production Environment
+
+**Required GitHub Secrets:**
+- `REGISTRY_PASSWORD`: Docker registry authentication
+- `UPDATE_TOKEN`: Webhook token for deployment trigger
+
+**Required Environment Variables** (see `.env.production.example`):
+```bash
+DB_HOST=db
+DB_PORT=3306
+DB_USER=dnd_spells
+DB_PASSWORD=<secure_password>
+DB_NAME=dnd_spells
+DB_ROOT_PASSWORD=<root_password>
+TRAEFIK_HOST=dnd-spells.yourdomain.com
+NODE_ENV=production
+```
+
+### Production Stack
+- **Reverse Proxy**: Traefik with automatic Let's Encrypt SSL
+- **Database**: MariaDB 11 with health checks and persistence
+- **Logging**: JSON logs with rotation (10MB max, 3 files)
+- **Auto-restart**: All services restart on failure
+- **Migrations**: Automatic Drizzle migrations on container start via `entrypoint.prod.sh`
+
+### Deployment Steps
+1. Ensure Traefik network exists: `docker network create traefik-network`
+2. Configure `.env` file on server (use `.env.production.example` as template)
+3. Push a version tag to trigger deployment: `git tag v1.0.0 && git push origin v1.0.0`
+4. GitHub Actions will build and deploy automatically
+
+### Manual Deployment
+```bash
+# Build and start production stack
+docker-compose -f docker-compose.prod.yml up -d
+
+# View logs
+docker-compose -f docker-compose.prod.yml logs -f app
+
+# Stop stack
+docker-compose -f docker-compose.prod.yml down
+```
+
 ## Architecture
 
 ### Tech Stack
