@@ -30,22 +30,9 @@ export function Markdown({ children }: MarkdownProps) {
         remarkPlugins={[remarkGfm]}
         components={{
           p: ({ children }) => <p className="my-2 leading-relaxed">{children}</p>,
-          strong: ({ children, ...props }) => {
-            // Check if this is the first strong element by looking at the node's position
-            const isFirst = props.node?.position?.start?.offset === props.node?.parent?.children?.find((child: any) => child.type === 'strong')?.position?.start?.offset;
-            
-            return (
-              <>
-                {!isFirst && (
-                  <>
-                    <br />
-                    <br />
-                  </>
-                )}
-                <strong className="text-amber-200 font-semibold">{children}</strong>
-              </>
-            );
-          },
+          strong: ({ children }) => (
+            <strong className="text-amber-200 font-semibold">{children}</strong>
+          ),
           em: ({ children }) => <em className="text-stone-300">{children}</em>,
           ul: ({ children }) => <ul className="my-2 list-disc list-inside space-y-1">{children}</ul>,
           ol: ({ children }) => <ol className="my-2 list-decimal list-inside space-y-1">{children}</ol>,
