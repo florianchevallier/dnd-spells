@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Dark fantasy color palette */
+  --color-fantasy-bg: #0f0d0a;
+  --color-fantasy-surface: #1a1714;
+  --color-fantasy-border: #2d2820;
+  --color-fantasy-text: #e8e0d4;
+  --color-fantasy-text-muted: #9a8f7f;
+  --color-fantasy-gold: #c9a227;
+  --color-fantasy-gold-dark: #8b6914;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Base styles */
+html {
+  color-scheme: dark;
+}
+
+html,
+body {
+  @apply bg-stone-950 text-stone-100;
+  background: linear-gradient(
+    180deg,
+    #0f0d0a 0%,
+    #1a1714 50%,
+    #0f0d0a 100%
+  );
+  background-attachment: fixed;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-stone-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-stone-700 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-stone-600;
+}
+
+/* Card hover effects */
+.spell-card {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Skeleton loading animation */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Focus styles */
+*:focus-visible {
+  @apply outline-none ring-2 ring-amber-500 ring-offset-2 ring-offset-stone-950;
+}
+
+/* Selection styling */
+::selection {
+  @apply bg-amber-900/50 text-amber-100;
+}
+
+/* Badge school colors */
+.school-abjuration { @apply bg-blue-600; }
+.school-divination { @apply bg-purple-600; }
+.school-enchantement { @apply bg-pink-600; }
+.school-evocation { @apply bg-red-600; }
+.school-illusion { @apply bg-violet-600; }
+.school-invocation { @apply bg-amber-600; }
+.school-necromancie { @apply bg-emerald-700; }
+.school-transmutation { @apply bg-orange-600; }
