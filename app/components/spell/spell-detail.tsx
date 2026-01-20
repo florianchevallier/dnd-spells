@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { getSchoolColor, getLevelLabel } from "~/lib/constants";
-import type { SpellWithClasses } from "~/db/queries/spells";
+import type { SpellWithClasses } from "~/db/queries/spells.server";
 import { BookOpen, Clock, Hourglass, Target, Zap } from "lucide-react";
 
 interface SpellDetailProps {

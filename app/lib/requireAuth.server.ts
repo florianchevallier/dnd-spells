@@ -3,7 +3,7 @@ import {
   getSessionIdFromRequest,
   validateSession,
 } from "~/lib/auth.server";
-import type { User } from "~/db/schema";
+import type { User } from "~/db/schema.server";
 
 // Protect a route - redirects to login if not authenticated
 export async function requireAuth(request: Request): Promise<User> {

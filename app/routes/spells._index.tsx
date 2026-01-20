@@ -1,13 +1,13 @@
 import { useState, useMemo } from "react";
 import type { Route } from "./+types/spells._index";
-import { getSpells, getAvailableLevelsByClass, type SpellWithClasses } from "~/db/queries/spells";
+import { getSpells, getAvailableLevelsByClass, type SpellWithClasses } from "~/db/queries/spells.server";
 import {
   getCharactersByUserId,
   getCharacterById,
   getSpellSlotsForCharacter,
   getAvailableSpellLevelsFromSlots,
   type CharacterWithDetails,
-} from "~/db/queries/characters";
+} from "~/db/queries/characters.server";
 import { getOptionalUser } from "~/lib/requireAuth.server";
 import { FilterBar } from "~/components/filters/filter-bar";
 import { SpellList } from "~/components/spell/spell-list";

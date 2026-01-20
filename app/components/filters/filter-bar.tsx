@@ -5,7 +5,7 @@ import { SearchInput } from "./search-input";
 import { CharacterFilter } from "./character-filter";
 import { Button } from "~/components/ui/button";
 import { X, User } from "lucide-react";
-import type { CharacterWithDetails } from "~/db/queries/characters";
+import type { CharacterWithDetails } from "~/db/queries/characters.server";
 
 interface FilterBarProps {
   searchQuery: string;

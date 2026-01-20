@@ -3,7 +3,7 @@ import { parse } from "csv-parse";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import * as dotenv from "dotenv";
-import * as schema from "../app/db/schema";
+import * as schema from "../app/db/schema.server";
 
 dotenv.config();
 

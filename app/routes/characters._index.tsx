@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import type { Route } from "./+types/characters._index";
-import { getCharactersByUserId } from "~/db/queries/characters";
+import { getCharactersByUserId } from "~/db/queries/characters.server";
 import { requireAuth } from "~/lib/requireAuth.server";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";

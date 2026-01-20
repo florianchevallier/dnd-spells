@@ -2,9 +2,9 @@ import { Outlet, useOutletContext } from "react-router";
 import { Header } from "~/components/layout/header";
 import { Footer } from "~/components/layout/footer";
 import type { Route } from "./+types/characters";
-import { getSpellCount } from "~/db/queries/spells";
+import type { getSpellCount } from "~/db/queries/spells.server";
 import { requireAuth } from "~/lib/requireAuth.server";
-import type { User } from "~/db/schema";
+import type { User } from "~/db/schema.server";
 
 type ContextType = { user: User };
 

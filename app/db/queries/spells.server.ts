@@ -1,5 +1,5 @@
 import { eq, and, inArray, like, or, sql } from "drizzle-orm";
-import { db, schema } from "../index";
+import { db, schema } from "../index.server";
 
 export interface SpellFilters {
   classes?: string[];

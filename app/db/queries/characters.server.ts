@@ -1,5 +1,5 @@
 import { eq, and, desc } from "drizzle-orm";
-import { db } from "~/db";
+import { db } from "~/db/index.server";
 import {
   characters,
   classes,
@@ -7,7 +7,7 @@ import {
   classSpellSlots,
   type Character,
   type NewCharacter,
-} from "~/db/schema";
+} from "~/db/schema.server";
 
 // Character with class and subclass info
 export interface CharacterWithDetails {

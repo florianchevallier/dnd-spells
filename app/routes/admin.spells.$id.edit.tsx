@@ -8,7 +8,7 @@ import {
   updateSpell,
   updateSpellClasses,
   createSpell,
-} from "~/db/queries/spells";
+} from "~/db/queries/spells.server";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";

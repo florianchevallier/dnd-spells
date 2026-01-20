@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import type { LoaderFunction, ActionFunction } from "react-router";
 import { Plus, Search, Edit, Trash2 } from "lucide-react";
-import { getAllSpellsForAdmin, deleteSpell } from "~/db/queries/spells";
+import type { getAllSpellsForAdmin, deleteSpell } from "~/db/queries/spells.server";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";

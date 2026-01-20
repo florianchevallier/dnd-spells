@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import type { CharacterWithDetails } from "~/db/queries/characters";
+import type { CharacterWithDetails } from "~/db/queries/characters.server";
 
 interface CharacterFilterProps {
   characters: CharacterWithDetails[];

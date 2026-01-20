@@ -2,7 +2,7 @@ import { redirect } from "react-router";
 import { Form, useLoaderData, useNavigation, Link } from "react-router";
 import type { Route } from "./+types/characters.$id.delete";
 import { requireAuth } from "~/lib/requireAuth.server";
-import { getCharacterById, deleteCharacter } from "~/db/queries/characters";
+import type { getCharacterById, deleteCharacter } from "~/db/queries/characters.server";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { ArrowLeft, Trash2, AlertTriangle } from "lucide-react";

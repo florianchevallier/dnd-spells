@@ -1,7 +1,7 @@
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getSchoolColor, getLevelLabel } from "~/lib/constants";
-import type { SpellWithClasses } from "~/db/queries/spells";
+import type { SpellWithClasses } from "~/db/queries/spells.server";
 import { Clock, Target, Zap } from "lucide-react";
 
 interface SpellCardProps {

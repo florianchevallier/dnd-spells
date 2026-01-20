@@ -2,7 +2,7 @@ import { Outlet } from "react-router";
 import { Header } from "~/components/layout/header";
 import { Footer } from "~/components/layout/footer";
 import type { Route } from "./+types/auth";
-import { getSpellCount } from "~/db/queries/spells";
+import { getSpellCount } from "~/db/queries/spells.server";
 import { getOptionalUser } from "~/lib/requireAuth.server";
 
 export async function loader({ request }: Route.LoaderArgs) {

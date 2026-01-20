@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import type { User as UserType } from "~/db/schema";
+import type { User as UserType } from "~/db/schema.server";
 
 interface HeaderProps {
   spellCount?: number;

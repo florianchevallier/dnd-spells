@@ -1,5 +1,5 @@
 import { SpellCard } from "./spell-card";
-import type { SpellWithClasses } from "~/db/queries/spells";
+import type { SpellWithClasses } from "~/db/queries/spells.server";
 
 interface SpellListProps {
   spells: SpellWithClasses[];

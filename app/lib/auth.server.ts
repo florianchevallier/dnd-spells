@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
-import { db } from "~/db";
-import { users, sessions, type User } from "~/db/schema";
+import { db } from "~/db/index.server";
+import { users, sessions, type User } from "~/db/schema.server";
 
 const SALT_ROUNDS = 10;
 const SESSION_EXPIRY_DAYS = 30;
