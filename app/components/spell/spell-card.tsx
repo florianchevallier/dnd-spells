@@ -45,13 +45,8 @@ export function SpellCard({ spell, onClick }: SpellCardProps) {
           <div className="flex items-center gap-1.5 min-w-0">
             <Target className="h-3 w-3 text-stone-500 shrink-0" />
             <span className="truncate">
-              {spell.porteeType}
-              {spell.porteeValeur ? ` (${spell.porteeValeur} ${spell.porteeUnite})` : ""}
-              {spell.porteeForme && (
-                <span className="block text-stone-400 text-[10px] sm:text-xs mt-0.5">
-                  {spell.porteeForme}
-                </span>
-              )}
+              {spell.porteeType}<br />
+              {spell.porteeValeur ? `${spell.porteeValeur} ${spell.porteeUnite}${spell.porteeValeur > 1 ? "s" : ""}` : ""}
             </span>
           </div>
           {spell.composantes && (

@@ -1,7 +1,7 @@
 import { Outlet } from "react-router";
 import { Header } from "~/components/layout/header";
 import { Footer } from "~/components/layout/footer";
-import type { Route } from "./+types/spells";
+import type { Route } from "./+types/auth";
 import { getSpellCount } from "~/db/queries/spells";
 import { getOptionalUser } from "~/lib/requireAuth.server";
 
@@ -13,7 +13,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { spellCount: count, user };
 }
 
-export default function SpellsLayout({ loaderData }: Route.ComponentProps) {
+export default function AuthLayout({ loaderData }: Route.ComponentProps) {
   return (
     <div className="min-h-screen flex flex-col bg-stone-950">
       <Header spellCount={loaderData.spellCount} user={loaderData.user} />

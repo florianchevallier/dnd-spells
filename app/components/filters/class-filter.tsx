@@ -7,9 +7,10 @@ import { ChevronDown } from "lucide-react";
 interface ClassFilterProps {
   selectedClasses: string[];
   onChange: (classes: string[]) => void;
+  disabled?: boolean;
 }
 
-export function ClassFilter({ selectedClasses, onChange }: ClassFilterProps) {
+export function ClassFilter({ selectedClasses, onChange, disabled }: ClassFilterProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -24,6 +25,7 @@ export function ClassFilter({ selectedClasses, onChange }: ClassFilterProps) {
   }, []);
 
   const toggleClass = (classId: string) => {
+    if (disabled) return;
     if (selectedClasses.includes(classId)) {
       onChange(selectedClasses.filter((c) => c !== classId));
     } else {
@@ -32,11 +34,19 @@ export function ClassFilter({ selectedClasses, onChange }: ClassFilterProps) {
   };
 
   const selectAll = () => {
+    if (disabled) return;
     onChange(CLASSES.map((c) => c.id));
   };
 
   const clearAll = () => {
+    if (disabled) return;
     onChange([]);
+  };
+
+  // Find display name for selected class
+  const getClassDisplayName = (classId: string) => {
+    const cls = CLASSES.find((c) => c.id === classId);
+    return cls?.name || classId;
   };
 
   return (
@@ -44,17 +54,19 @@ export function ClassFilter({ selectedClasses, onChange }: ClassFilterProps) {
       <Button
         variant="outline"
         size="sm"
-        onClick={() => setOpen(!open)}
-        className="min-w-[140px] justify-between"
+        onClick={() => !disabled && setOpen(!open)}
+        className={`min-w-[140px] justify-between ${disabled ? "opacity-70 cursor-not-allowed" : ""}`}
+        disabled={disabled}
       >
         <span>
-          Classes
-          {selectedClasses.length > 0 && ` (${selectedClasses.length})`}
+          {disabled && selectedClasses.length === 1
+            ? getClassDisplayName(selectedClasses[0])
+            : `Classes${selectedClasses.length > 0 ? ` (${selectedClasses.length})` : ""}`}
         </span>
         <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
       </Button>
 
-      {open && (
+      {open && !disabled && (
         <div className="absolute top-full mt-1 z-50 min-w-[200px] rounded-md border border-stone-700 bg-stone-900 p-2 shadow-lg">
           <div className="flex justify-between mb-2 pb-2 border-b border-stone-700">
             <button

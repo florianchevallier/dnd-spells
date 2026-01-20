@@ -8,9 +8,10 @@ interface LevelFilterProps {
   selectedLevels: number[];
   onChange: (levels: number[]) => void;
   availableLevels?: number[];
+  disabledLevels?: number[];
 }
 
-export function LevelFilter({ selectedLevels, onChange, availableLevels }: LevelFilterProps) {
+export function LevelFilter({ selectedLevels, onChange, availableLevels, disabledLevels }: LevelFilterProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -77,13 +78,14 @@ export function LevelFilter({ selectedLevels, onChange, availableLevels }: Level
           <div className="space-y-1">
             {LEVELS.map((level) => {
               const isAvailable = !availableLevels || availableLevels.includes(level.value);
+              const isDisabled = disabledLevels?.includes(level.value) || !isAvailable;
               return (
                 <Checkbox
                   key={level.value}
                   label={level.label}
                   checked={selectedLevels.includes(level.value)}
                   onChange={() => toggleLevel(level.value)}
-                  disabled={!isAvailable}
+                  disabled={isDisabled}
                 />
               );
             })}

@@ -185,3 +185,148 @@ export async function getAvailableLevelsByClass(classNames?: string[]): Promise<
 
   return levelsResult.map((row) => row.niveau);
 }
+
+export interface UpdateSpellData {
+  nom?: string;
+  niveau?: number;
+  ecole?: string;
+  rituel?: boolean;
+  concentration?: boolean;
+  tempsValeur?: number | null;
+  tempsUnite?: string | null;
+  tempsCondition?: string | null;
+  porteeType?: string | null;
+  porteeValeur?: number | null;
+  porteeUnite?: string | null;
+  porteeForme?: string | null;
+  dureeType?: string | null;
+  dureeValeur?: number | null;
+  dureeUnite?: string | null;
+  composantes?: string | null;
+  materiaux?: string | null;
+  niv1?: string | null;
+  niv2?: string | null;
+  niv3?: string | null;
+  niv4?: string | null;
+  niv5?: string | null;
+  niv6?: string | null;
+  niv7?: string | null;
+  niv8?: string | null;
+  niv9?: string | null;
+  source?: string | null;
+  description?: string | null;
+  niveauxSupTxt?: string | null;
+}
+
+export async function updateSpell(id: number, data: UpdateSpellData) {
+  await db
+    .update(schema.spells)
+    .set(data)
+    .where(eq(schema.spells.id, id));
+}
+
+export async function deleteSpell(id: number) {
+  await db.delete(schema.spells).where(eq(schema.spells.id, id));
+}
+
+export async function createSpell(data: Omit<schema.Spell, "id">, classIds: number[]) {
+  const [result] = await db.insert(schema.spells).values(data);
+
+  if (classIds.length > 0) {
+    const spellClassesData = classIds.map((classId) => ({
+      spellId: Number(result.insertId),
+      classId,
+    }));
+    await db.insert(schema.spellClasses).values(spellClassesData);
+  }
+
+  return Number(result.insertId);
+}
+
+export async function updateSpellClasses(spellId: number, classIds: number[]) {
+  await db.delete(schema.spellClasses).where(eq(schema.spellClasses.spellId, spellId));
+
+  if (classIds.length > 0) {
+    const spellClassesData = classIds.map((classId) => ({
+      spellId,
+      classId,
+    }));
+    await db.insert(schema.spellClasses).values(spellClassesData);
+  }
+}
+
+export async function getClassByNom(nom: string) {
+  const result = await db
+    .select()
+    .from(schema.classes)
+    .where(eq(schema.classes.nom, nom))
+    .limit(1);
+  return result[0] || null;
+}
+
+export async function getAllSpellsForAdmin() {
+  const spellsResult = await db
+    .select()
+    .from(schema.spells)
+    .orderBy(schema.spells.niveau, schema.spells.nom);
+
+  if (spellsResult.length === 0) return [];
+
+  const spellIds = spellsResult.map((s) => s.id);
+  const spellClassesResult = await db
+    .select({
+      spellId: schema.spellClasses.spellId,
+      classId: schema.spellClasses.classId,
+      classNom: schema.classes.nom,
+      classNomAffich: schema.classes.nomAffich,
+    })
+    .from(schema.spellClasses)
+    .innerJoin(schema.classes, eq(schema.spellClasses.classId, schema.classes.id))
+    .where(inArray(schema.spellClasses.spellId, spellIds));
+
+  const classesMap = new Map<number, { ids: number[]; noms: string[]; nomsAffich: string[] }>();
+  for (const row of spellClassesResult) {
+    if (!classesMap.has(row.spellId)) {
+      classesMap.set(row.spellId, { ids: [], noms: [], nomsAffich: [] });
+    }
+    classesMap.get(row.spellId)!.ids.push(row.classId);
+    classesMap.get(row.spellId)!.noms.push(row.classNom);
+    classesMap.get(row.spellId)!.nomsAffich.push(row.classNomAffich);
+  }
+
+  return spellsResult.map((spell) => ({
+    ...spell,
+    classes: classesMap.get(spell.id) || { ids: [], noms: [], nomsAffich: [] },
+  }));
+}
+
+export async function getSpellByIdForEdit(id: number) {
+  const spellResult = await db
+    .select()
+    .from(schema.spells)
+    .where(eq(schema.spells.id, id))
+    .limit(1);
+
+  if (spellResult.length === 0) return null;
+
+  const spell = spellResult[0];
+
+  const classesResult = await db
+    .select({
+      classId: schema.classes.id,
+      classNom: schema.classes.nom,
+      classNomAffich: schema.classes.nomAffich,
+    })
+    .from(schema.spellClasses)
+    .innerJoin(schema.classes, eq(schema.spellClasses.classId, schema.classes.id))
+    .where(eq(schema.spellClasses.spellId, id));
+
+  return {
+    ...spell,
+    classes: {
+      ids: classesResult.map((c) => c.classId),
+      noms: classesResult.map((c) => c.classNom),
+      nomsAffich: classesResult.map((c) => c.classNomAffich),
+    },
+  };
+}

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import type { Route } from "./+types/spells._index";
+import type { Route } from "./+types/_index";
 import { getSpells, getAvailableLevelsByClass, type SpellWithClasses } from "~/db/queries/spells";
 import {
   getCharactersByUserId,
@@ -9,6 +9,9 @@ import {
   type CharacterWithDetails,
 } from "~/db/queries/characters";
 import { getOptionalUser } from "~/lib/requireAuth.server";
+import { getSpellCount } from "~/db/queries/spells";
+import { Header } from "~/components/layout/header";
+import { Footer } from "~/components/layout/footer";
 import { FilterBar } from "~/components/filters/filter-bar";
 import { SpellList } from "~/components/spell/spell-list";
 import { SpellDetail } from "~/components/spell/spell-detail";
@@ -22,6 +25,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   // Get optional user for character filtering
   const user = await getOptionalUser(request);
+
+  // Get spell count for header
+  const spellCount = await getSpellCount();
 
   // Get user's characters if logged in
   const characters: CharacterWithDetails[] = user
@@ -80,6 +86,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     characters,
     selectedCharacter,
     characterAvailableLevels,
+    spellCount,
+    user,
   };
 }
 
@@ -90,7 +98,7 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function SpellsIndex({ loaderData }: Route.ComponentProps) {
+export default function Home({ loaderData }: Route.ComponentProps) {
   const {
     spells,
     availableLevels,
@@ -98,6 +106,8 @@ export default function SpellsIndex({ loaderData }: Route.ComponentProps) {
     characters,
     selectedCharacter,
     characterAvailableLevels,
+    spellCount,
+    user,
   } = loaderData;
   const [selectedSpell, setSelectedSpell] = useState<SpellWithClasses | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -131,30 +141,36 @@ export default function SpellsIndex({ loaderData }: Route.ComponentProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <FilterBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        availableLevels={availableLevels}
-        isLoggedIn={isLoggedIn}
-        characters={characters}
-        selectedCharacter={selectedCharacter}
-        characterAvailableLevels={characterAvailableLevels}
-      />
+    <div className="min-h-screen flex flex-col bg-stone-950">
+      <Header spellCount={spellCount} user={user} />
+      <main className="flex-1 container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div className="space-y-6">
+          <FilterBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            availableLevels={availableLevels}
+            isLoggedIn={isLoggedIn}
+            characters={characters}
+            selectedCharacter={selectedCharacter}
+            characterAvailableLevels={characterAvailableLevels}
+          />
 
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-stone-400">
-          {filteredSpells.length} sort{filteredSpells.length !== 1 ? "s" : ""} trouvé{filteredSpells.length !== 1 ? "s" : ""}
-        </p>
-      </div>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-stone-400">
+              {filteredSpells.length} sort{filteredSpells.length !== 1 ? "s" : ""} trouvé{filteredSpells.length !== 1 ? "s" : ""}
+            </p>
+          </div>
 
-      <SpellList spells={filteredSpells} onSpellClick={handleSpellClick} />
+          <SpellList spells={filteredSpells} onSpellClick={handleSpellClick} />
 
-      <SpellDetail
-        spell={selectedSpell}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
+          <SpellDetail
+            spell={selectedSpell}
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+          />
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }
