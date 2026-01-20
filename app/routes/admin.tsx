@@ -1,7 +1,7 @@
 import type { LoaderFunction } from "react-router";
 import { Link, Outlet, useLoaderData } from "react-router";
 import { Wand2, Database, Scroll } from "lucide-react";
-import type { getSpellCount } from "~/db/queries/spells.server";
+import { getSpellCount } from "~/db/queries/spells.server";
 
 export const loader: LoaderFunction = async () => {
   const spellCount = await getSpellCount();

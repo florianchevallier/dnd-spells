@@ -1,5 +1,5 @@
 import type { Route } from "./+types/api.subclasses";
-import type { getSubclassesByClassId } from "~/db/queries/characters.server";
+import { getSubclassesByClassId } from "~/db/queries/characters.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
