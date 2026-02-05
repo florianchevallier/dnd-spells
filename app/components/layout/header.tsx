@@ -1,5 +1,5 @@
 import { Link, Form } from "react-router";
-import { BookOpen, User, LogOut, LogIn, Users } from "lucide-react";
+import { BookOpen, User, LogOut, LogIn, Users, Star } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -48,6 +48,12 @@ export function Header({ spellCount, user }: HeaderProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link to="/spells/prepared" className="flex items-center gap-2">
+                      <Star className="h-4 w-4" />
+                      Sorts prepares
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/characters" className="flex items-center gap-2">
                       <Users className="h-4 w-4" />

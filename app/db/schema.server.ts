@@ -171,9 +171,29 @@ export const characters = mysqlTable(
   ]
 );
 
+// Character prepared spells table
+export const characterPreparedSpells = mysqlTable(
+  "character_prepared_spells",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    characterId: int("character_id")
+      .notNull()
+      .references(() => characters.id, { onDelete: "cascade" }),
+    spellId: int("spell_id")
+      .notNull()
+      .references(() => spells.id, { onDelete: "cascade" }),
+    preparedAt: timestamp("prepared_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_prepared_character_id").on(table.characterId),
+    index("idx_prepared_character_spell").on(table.characterId, table.spellId),
+  ]
+);
+
 // Relations
 export const spellsRelations = relations(spells, ({ many }) => ({
   spellClasses: many(spellClasses),
+  preparedByCharacters: many(characterPreparedSpells),
 }));
 
 export const classesRelations = relations(classes, ({ many }) => ({
@@ -229,7 +249,7 @@ export const classSpellSlotsRelations = relations(
   })
 );
 
-export const charactersRelations = relations(characters, ({ one }) => ({
+export const charactersRelations = relations(characters, ({ one, many }) => ({
   user: one(users, {
     fields: [characters.userId],
     references: [users.id],
@@ -242,7 +262,22 @@ export const charactersRelations = relations(characters, ({ one }) => ({
     fields: [characters.subclassId],
     references: [subclasses.id],
   }),
+  preparedSpells: many(characterPreparedSpells),
 }));
+
+export const characterPreparedSpellsRelations = relations(
+  characterPreparedSpells,
+  ({ one }) => ({
+    character: one(characters, {
+      fields: [characterPreparedSpells.characterId],
+      references: [characters.id],
+    }),
+    spell: one(spells, {
+      fields: [characterPreparedSpells.spellId],
+      references: [spells.id],
+    }),
+  })
+);
 
 // Types
 export type Spell = typeof spells.$inferSelect;
@@ -259,3 +294,5 @@ export type ClassSpellSlots = typeof classSpellSlots.$inferSelect;
 export type NewClassSpellSlots = typeof classSpellSlots.$inferInsert;
 export type Character = typeof characters.$inferSelect;
 export type NewCharacter = typeof characters.$inferInsert;
+export type CharacterPreparedSpell = typeof characterPreparedSpells.$inferSelect;
+export type NewCharacterPreparedSpell = typeof characterPreparedSpells.$inferInsert;

@@ -8,6 +8,7 @@ import {
   getAvailableSpellLevelsFromSlots,
   type CharacterWithDetails,
 } from "~/db/queries/characters.server";
+import { getPreparedSpellIds } from "~/db/queries/prepared-spells.server";
 import { getOptionalUser } from "~/lib/requireAuth.server";
 import { FilterBar } from "~/components/filters/filter-bar";
 import { SpellList } from "~/components/spell/spell-list";
@@ -31,6 +32,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   // Get selected character details if specified
   let selectedCharacter: CharacterWithDetails | null = null;
   let characterAvailableLevels: number[] | null = null;
+  let preparedSpellIds: number[] = [];
 
   if (characterId && user) {
     selectedCharacter = await getCharacterById(Number(characterId), user.id);
@@ -46,6 +48,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       if (spellSlots) {
         characterAvailableLevels = getAvailableSpellLevelsFromSlots(spellSlots);
       }
+
+      // Get prepared spell IDs for this character
+      preparedSpellIds = await getPreparedSpellIds(selectedCharacter.id);
     }
   }
 
@@ -80,6 +85,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     characters,
     selectedCharacter,
     characterAvailableLevels,
+    preparedSpellIds,
   };
 }
 
@@ -98,6 +104,7 @@ export default function SpellsIndex({ loaderData }: Route.ComponentProps) {
     characters,
     selectedCharacter,
     characterAvailableLevels,
+    preparedSpellIds,
   } = loaderData;
   const [selectedSpell, setSelectedSpell] = useState<SpellWithClasses | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -148,12 +155,19 @@ export default function SpellsIndex({ loaderData }: Route.ComponentProps) {
         </p>
       </div>
 
-      <SpellList spells={filteredSpells} onSpellClick={handleSpellClick} />
+      <SpellList
+        spells={filteredSpells}
+        onSpellClick={handleSpellClick}
+        characterId={selectedCharacter?.id}
+        preparedSpellIds={preparedSpellIds}
+      />
 
       <SpellDetail
         spell={selectedSpell}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        characterId={selectedCharacter?.id}
+        isPrepared={selectedSpell ? preparedSpellIds.includes(selectedSpell.id) : false}
       />
     </div>
   );

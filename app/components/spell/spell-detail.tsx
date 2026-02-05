@@ -17,11 +17,14 @@ import {
 import { getSchoolColor, getLevelLabel } from "~/lib/constants";
 import type { SpellWithClasses } from "~/db/queries/spells.server";
 import { BookOpen, Clock, Hourglass, Target, Zap } from "lucide-react";
+import { PrepareButton } from "~/components/prepared/prepare-button";
 
 interface SpellDetailProps {
   spell: SpellWithClasses | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  characterId?: number | null;
+  isPrepared?: boolean;
 }
 
 // Helper function to get damage/effect value for a specific level
@@ -38,16 +41,25 @@ function hasHigherLevelValues(spell: SpellWithClasses): boolean {
   return false;
 }
 
-export function SpellDetail({ spell, open, onOpenChange }: SpellDetailProps) {
-  if (!spell) return null;
+export function SpellDetail({
+  spell,
+  open,
+  onOpenChange,
+  characterId,
+  isPrepared = false,
+}: SpellDetailProps) {
+  const [castLevel, setCastLevel] = useState(spell?.niveau ?? 0);
 
-  const [castLevel, setCastLevel] = useState(spell.niveau);
-  const schoolColor = getSchoolColor(spell.ecole);
-  
   // Reset cast level when spell changes
   useEffect(() => {
-    setCastLevel(spell.niveau);
-  }, [spell.id, spell.niveau]);
+    if (spell) {
+      setCastLevel(spell.niveau);
+    }
+  }, [spell?.id, spell?.niveau]);
+
+  if (!spell) return null;
+
+  const schoolColor = getSchoolColor(spell.ecole);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -55,9 +67,18 @@ export function SpellDetail({ spell, open, onOpenChange }: SpellDetailProps) {
         <DialogHeader>
           <div className="flex items-start justify-between gap-2 sm:gap-4 pr-6 sm:pr-8">
             <DialogTitle className="text-lg sm:text-xl leading-tight">{spell.nom}</DialogTitle>
-            <Badge variant="level" className="shrink-0 text-xs sm:text-sm">
-              {getLevelLabel(spell.niveau)}
-            </Badge>
+            <div className="flex items-center gap-2 shrink-0">
+              <PrepareButton
+                spellId={spell.id}
+                characterId={characterId ?? null}
+                isPrepared={isPrepared}
+                size="default"
+                showLabel
+              />
+              <Badge variant="level" className="text-xs sm:text-sm">
+                {getLevelLabel(spell.niveau)}
+              </Badge>
+            </div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mt-2">
             <Badge className={schoolColor}>

@@ -4,9 +4,16 @@ import type { SpellWithClasses } from "~/db/queries/spells.server";
 interface SpellListProps {
   spells: SpellWithClasses[];
   onSpellClick: (spell: SpellWithClasses) => void;
+  characterId?: number | null;
+  preparedSpellIds?: number[];
 }
 
-export function SpellList({ spells, onSpellClick }: SpellListProps) {
+export function SpellList({
+  spells,
+  onSpellClick,
+  characterId,
+  preparedSpellIds = [],
+}: SpellListProps) {
   if (spells.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -21,6 +28,8 @@ export function SpellList({ spells, onSpellClick }: SpellListProps) {
     );
   }
 
+  const preparedSet = new Set(preparedSpellIds);
+
   return (
     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
       {spells.map((spell) => (
@@ -28,6 +37,8 @@ export function SpellList({ spells, onSpellClick }: SpellListProps) {
           key={spell.id}
           spell={spell}
           onClick={() => onSpellClick(spell)}
+          characterId={characterId}
+          isPrepared={preparedSet.has(spell.id)}
         />
       ))}
     </div>

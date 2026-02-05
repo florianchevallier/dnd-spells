@@ -3,13 +3,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getSchoolColor, getLevelLabel } from "~/lib/constants";
 import type { SpellWithClasses } from "~/db/queries/spells.server";
 import { Clock, Target, Zap } from "lucide-react";
+import { PrepareButton } from "~/components/prepared/prepare-button";
 
 interface SpellCardProps {
   spell: SpellWithClasses;
   onClick?: () => void;
+  characterId?: number | null;
+  isPrepared?: boolean;
 }
 
-export function SpellCard({ spell, onClick }: SpellCardProps) {
+export function SpellCard({
+  spell,
+  onClick,
+  characterId,
+  isPrepared = false,
+}: SpellCardProps) {
   const schoolColor = getSchoolColor(spell.ecole);
 
   return (
@@ -22,9 +30,15 @@ export function SpellCard({ spell, onClick }: SpellCardProps) {
           <CardTitle className="text-base group-hover:text-amber-200 transition-colors line-clamp-2 flex-1 min-w-0">
             {spell.nom}
           </CardTitle>
-          <Badge variant="level" className="shrink-0">
-            {getLevelLabel(spell.niveau)}
-          </Badge>
+          <div className="flex items-center gap-1 shrink-0">
+            <PrepareButton
+              spellId={spell.id}
+              characterId={characterId ?? null}
+              isPrepared={isPrepared}
+              size="sm"
+            />
+            <Badge variant="level">{getLevelLabel(spell.niveau)}</Badge>
+          </div>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap min-h-[24px]">
           <Badge className={schoolColor}>
