@@ -51,6 +51,33 @@ interface ClassCsvRow {
   Niv_9: string;
 }
 
+interface MonsterCsvRow {
+  name: string;
+  type: string;
+  trad_raw?: string;
+  trad_json?: string;
+  ac?: string;
+  hp?: string;
+  speed?: string;
+  str?: string;
+  dex?: string;
+  con?: string;
+  int?: string;
+  wis?: string;
+  cha?: string;
+  str_mod?: string;
+  dex_mod?: string;
+  con_mod?: string;
+  int_mod?: string;
+  wis_mod?: string;
+  cha_mod?: string;
+  details_json?: string;
+  sections_json?: string;
+  description_text?: string;
+  image_url?: string;
+  links_json?: string;
+}
+
 function cleanDescription(text: string): string {
   if (!text) return text;
 
@@ -142,7 +169,10 @@ function detectDelimiter(firstLine: string): string {
   return best;
 }
 
-function detectCsvType(firstRow: any): "spells" | "classes" {
+function detectCsvType(firstRow: any): "spells" | "classes" | "monsters" {
+  if ("name" in firstRow && "type" in firstRow && "details_json" in firstRow && "sections_json" in firstRow) {
+    return "monsters";
+  }
   if ("Classe" in firstRow && "Sous_Classe" in firstRow) {
     return "classes";
   }
@@ -209,6 +239,8 @@ export const action: ActionFunction = async ({ request }) => {
 
       if (csvType === "classes") {
         return await importClassesAndSpellSlots(connection, rows as ClassCsvRow[]);
+      } else if (csvType === "monsters") {
+        return await importMonsters(connection, rows as MonsterCsvRow[]);
       } else {
         return await importSpells(connection, rows as SpellCsvRow[]);
       }
@@ -547,6 +579,173 @@ async function importClassesAndSpellSlots(
   return {
     success: true,
     message: `Emplacements de sorts importes avec succes ! ${uniqueSubclasses.size} sous-classes et ${insertedCount} entrees d'emplacements de sorts importees${errorSuffix}.`,
+    details,
+  };
+}
+
+function normalizeJson(value: string | undefined, fallback: unknown): string {
+  const raw = (value || "").trim();
+  if (!raw) return JSON.stringify(fallback);
+  try {
+    return JSON.stringify(JSON.parse(raw));
+  } catch {
+    return JSON.stringify(fallback);
+  }
+}
+
+async function ensureMonsterTables(connection: mysql.Connection) {
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS monsters (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL UNIQUE,
+      type VARCHAR(255) NOT NULL,
+      trad_raw TEXT,
+      trad_json TEXT,
+      ac VARCHAR(255),
+      hp VARCHAR(255),
+      speed VARCHAR(255),
+      str INT NULL,
+      dex INT NULL,
+      con INT NULL,
+      \`int\` INT NULL,
+      wis INT NULL,
+      cha INT NULL,
+      str_mod VARCHAR(16),
+      dex_mod VARCHAR(16),
+      con_mod VARCHAR(16),
+      int_mod VARCHAR(16),
+      wis_mod VARCHAR(16),
+      cha_mod VARCHAR(16),
+      details_json TEXT NOT NULL,
+      sections_json TEXT NOT NULL,
+      description_text TEXT,
+      image_url VARCHAR(512),
+      links_json TEXT,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_monster_name (name),
+      INDEX idx_monster_type (type)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
+  await connection.query(`
+    CREATE TABLE IF NOT EXISTS user_favorite_monsters (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NOT NULL,
+      monster_id INT NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_favorite_user_id (user_id),
+      INDEX idx_favorite_monster_id (monster_id),
+      INDEX idx_favorite_user_monster (user_id, monster_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (monster_id) REFERENCES monsters(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+}
+
+async function importMonsters(connection: mysql.Connection, rows: MonsterCsvRow[]) {
+  await ensureMonsterTables(connection);
+
+  let upsertedCount = 0;
+  let errorCount = 0;
+  const errorDetails: string[] = [];
+  const importedNames = new Set<string>();
+
+  for (const row of rows) {
+    try {
+      const name = String(row.name || "").trim();
+      if (!name || name.toLowerCase() === "name") continue;
+
+      const type = String(row.type || "").trim();
+      if (!type) {
+        throw new Error("Type manquant");
+      }
+
+      await connection.query(
+        `INSERT INTO monsters (
+          name, type, trad_raw, trad_json, ac, hp, speed, str, dex, con, \`int\`, wis, cha,
+          str_mod, dex_mod, con_mod, int_mod, wis_mod, cha_mod, details_json, sections_json,
+          description_text, image_url, links_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          type = VALUES(type),
+          trad_raw = VALUES(trad_raw),
+          trad_json = VALUES(trad_json),
+          ac = VALUES(ac),
+          hp = VALUES(hp),
+          speed = VALUES(speed),
+          str = VALUES(str),
+          dex = VALUES(dex),
+          con = VALUES(con),
+          \`int\` = VALUES(\`int\`),
+          wis = VALUES(wis),
+          cha = VALUES(cha),
+          str_mod = VALUES(str_mod),
+          dex_mod = VALUES(dex_mod),
+          con_mod = VALUES(con_mod),
+          int_mod = VALUES(int_mod),
+          wis_mod = VALUES(wis_mod),
+          cha_mod = VALUES(cha_mod),
+          details_json = VALUES(details_json),
+          sections_json = VALUES(sections_json),
+          description_text = VALUES(description_text),
+          image_url = VALUES(image_url),
+          links_json = VALUES(links_json),
+          updated_at = CURRENT_TIMESTAMP`,
+        [
+          name,
+          type,
+          String(row.trad_raw || "").trim() || null,
+          normalizeJson(row.trad_json, []),
+          String(row.ac || "").trim() || null,
+          String(row.hp || "").trim() || null,
+          String(row.speed || "").trim() || null,
+          parseOptionalInt(row.str),
+          parseOptionalInt(row.dex),
+          parseOptionalInt(row.con),
+          parseOptionalInt(row.int),
+          parseOptionalInt(row.wis),
+          parseOptionalInt(row.cha),
+          String(row.str_mod || "").trim() || null,
+          String(row.dex_mod || "").trim() || null,
+          String(row.con_mod || "").trim() || null,
+          String(row.int_mod || "").trim() || null,
+          String(row.wis_mod || "").trim() || null,
+          String(row.cha_mod || "").trim() || null,
+          normalizeJson(row.details_json, {}),
+          normalizeJson(row.sections_json, []),
+          String(row.description_text || "").trim() || null,
+          String(row.image_url || "").trim() || null,
+          normalizeJson(row.links_json, []),
+        ]
+      );
+
+      importedNames.add(name);
+      upsertedCount++;
+    } catch (insertError) {
+      errorCount++;
+      if (errorDetails.length < 5) {
+        const message = insertError instanceof Error ? insertError.message : "Erreur inconnue";
+        errorDetails.push(`${row.name || "(nom manquant)"}: ${message}`);
+      }
+    }
+  }
+
+  if (importedNames.size > 0) {
+    const names = [...importedNames];
+    const placeholders = names.map(() => "?").join(",");
+    await connection.query(`DELETE FROM monsters WHERE name NOT IN (${placeholders})`, names);
+  }
+
+  const errorSuffix = errorCount > 0 ? ` (${errorCount} erreurs d'import)` : "";
+  const details =
+    errorCount > 0
+      ? `Exemples d'erreurs: ${errorDetails.join(" | ")}${errorCount > 5 ? " | ..." : ""}`
+      : undefined;
+
+  return {
+    success: true,
+    message: `Bestiaire importé avec succès ! ${upsertedCount} monstres traités${errorSuffix}.`,
     details,
   };
 }

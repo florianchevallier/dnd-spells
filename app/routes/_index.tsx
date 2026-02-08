@@ -10,6 +10,7 @@ import {
 } from "~/db/queries/characters.server";
 import { getOptionalUser } from "~/lib/requireAuth.server";
 import { getSpellCount } from "~/db/queries/spells.server";
+import { getMonsterCount } from "~/db/queries/monsters.server";
 import { getPreparedSpellIds } from "~/db/queries/prepared-spells.server";
 import { Header } from "~/components/layout/header";
 import { Footer } from "~/components/layout/footer";
@@ -28,7 +29,10 @@ export async function loader({ request }: Route.LoaderArgs) {
   const user = await getOptionalUser(request);
 
   // Get spell count for header
-  const spellCount = await getSpellCount();
+  const [spellCount, monsterCount] = await Promise.all([
+    getSpellCount(),
+    getMonsterCount(),
+  ]);
 
   // Get user's characters if logged in
   const characters: CharacterWithDetails[] = user
@@ -93,6 +97,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     characterAvailableLevels,
     preparedSpellIds,
     spellCount,
+    monsterCount,
     user,
   };
 }
@@ -114,6 +119,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     characterAvailableLevels,
     preparedSpellIds,
     spellCount,
+    monsterCount,
     user,
   } = loaderData;
   const [selectedSpell, setSelectedSpell] = useState<SpellWithClasses | null>(null);
@@ -149,7 +155,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-950">
-      <Header spellCount={spellCount} user={user} />
+      <Header spellCount={spellCount} monsterCount={monsterCount} user={user} />
       <main className="flex-1 container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <div className="space-y-6">
           <FilterBar

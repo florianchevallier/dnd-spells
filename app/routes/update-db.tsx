@@ -33,8 +33,9 @@ export default function UpdateDatabase() {
             </CardTitle>
             <CardDescription>
               Importez un fichier CSV pour mettre à jour la base de données.
-              Deux types de fichiers sont supportés : les sorts (avec colonnes Nom, Niveau, Ecole, Classes, etc.)
-              ou les emplacements de sorts par classe/sous-classe (avec colonnes Classe, Sous_Classe, Niveau, Niv_1 à Niv_9).
+              Trois types de fichiers sont supportés : les sorts (colonnes Nom, Niveau, Ecole, Classes, etc.),
+              les emplacements de sorts par classe/sous-classe (Classe, Sous_Classe, Niveau, Niv_1 à Niv_9),
+              et les monstres (name, type, details_json, sections_json, etc.).
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -123,6 +124,14 @@ export default function UpdateDatabase() {
                   <ul className="text-xs text-gray-600 space-y-1 ml-4">
                     <li>• Colonnes obligatoires : Classe, Sous_Classe, Niveau, Niv_1 à Niv_9</li>
                     <li>• Met à jour les tables subclasses et class_spell_slots</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-700 mb-1">3. Fichier de monstres :</p>
+                  <ul className="text-xs text-gray-600 space-y-1 ml-4">
+                    <li>• Colonnes obligatoires : name, type, details_json, sections_json</li>
+                    <li>• Upsert sur le nom pour préserver les IDs existants et les favoris associés</li>
+                    <li>• Supprime les monstres absents du CSV importé</li>
                   </ul>
                 </div>
                 <div>

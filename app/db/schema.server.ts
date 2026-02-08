@@ -190,6 +190,61 @@ export const characterPreparedSpells = mysqlTable(
   ]
 );
 
+// Monsters table
+export const monsters = mysqlTable(
+  "monsters",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    name: varchar("name", { length: 255 }).notNull().unique(),
+    type: varchar("type", { length: 255 }).notNull(),
+    tradRaw: text("trad_raw"),
+    tradJson: text("trad_json"),
+    ac: varchar("ac", { length: 255 }),
+    hp: varchar("hp", { length: 255 }),
+    speed: varchar("speed", { length: 255 }),
+    str: int("str"),
+    dex: int("dex"),
+    con: int("con"),
+    int: int("int"),
+    wis: int("wis"),
+    cha: int("cha"),
+    strMod: varchar("str_mod", { length: 16 }),
+    dexMod: varchar("dex_mod", { length: 16 }),
+    conMod: varchar("con_mod", { length: 16 }),
+    intMod: varchar("int_mod", { length: 16 }),
+    wisMod: varchar("wis_mod", { length: 16 }),
+    chaMod: varchar("cha_mod", { length: 16 }),
+    detailsJson: text("details_json").notNull(),
+    sectionsJson: text("sections_json").notNull(),
+    descriptionText: text("description_text"),
+    imageUrl: varchar("image_url", { length: 512 }),
+    linksJson: text("links_json"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => [index("idx_monster_name").on(table.name), index("idx_monster_type").on(table.type)]
+);
+
+// User favorite monsters
+export const userFavoriteMonsters = mysqlTable(
+  "user_favorite_monsters",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    userId: int("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    monsterId: int("monster_id")
+      .notNull()
+      .references(() => monsters.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_favorite_user_id").on(table.userId),
+    index("idx_favorite_monster_id").on(table.monsterId),
+    index("idx_favorite_user_monster").on(table.userId, table.monsterId),
+  ]
+);
+
 // Relations
 export const spellsRelations = relations(spells, ({ many }) => ({
   spellClasses: many(spellClasses),
@@ -217,6 +272,7 @@ export const spellClassesRelations = relations(spellClasses, ({ one }) => ({
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   characters: many(characters),
+  favoriteMonsters: many(userFavoriteMonsters),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -279,6 +335,24 @@ export const characterPreparedSpellsRelations = relations(
   })
 );
 
+export const monstersRelations = relations(monsters, ({ many }) => ({
+  favoritedByUsers: many(userFavoriteMonsters),
+}));
+
+export const userFavoriteMonstersRelations = relations(
+  userFavoriteMonsters,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [userFavoriteMonsters.userId],
+      references: [users.id],
+    }),
+    monster: one(monsters, {
+      fields: [userFavoriteMonsters.monsterId],
+      references: [monsters.id],
+    }),
+  })
+);
+
 // Types
 export type Spell = typeof spells.$inferSelect;
 export type NewSpell = typeof spells.$inferInsert;
@@ -296,3 +370,7 @@ export type Character = typeof characters.$inferSelect;
 export type NewCharacter = typeof characters.$inferInsert;
 export type CharacterPreparedSpell = typeof characterPreparedSpells.$inferSelect;
 export type NewCharacterPreparedSpell = typeof characterPreparedSpells.$inferInsert;
+export type Monster = typeof monsters.$inferSelect;
+export type NewMonster = typeof monsters.$inferInsert;
+export type UserFavoriteMonster = typeof userFavoriteMonsters.$inferSelect;
+export type NewUserFavoriteMonster = typeof userFavoriteMonsters.$inferInsert;

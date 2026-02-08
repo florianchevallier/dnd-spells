@@ -1,7 +1,7 @@
 import { Outlet } from "react-router";
+import type { Route } from "./+types/monsters";
 import { Header } from "~/components/layout/header";
 import { Footer } from "~/components/layout/footer";
-import type { Route } from "./+types/spells";
 import { getSpellCount } from "~/db/queries/spells.server";
 import { getMonsterCount } from "~/db/queries/monsters.server";
 import { getOptionalUser } from "~/lib/requireAuth.server";
@@ -15,7 +15,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { spellCount, monsterCount, user };
 }
 
-export default function SpellsLayout({ loaderData }: Route.ComponentProps) {
+export default function MonstersLayout({ loaderData }: Route.ComponentProps) {
   return (
     <div className="min-h-screen flex flex-col bg-stone-950">
       <Header
