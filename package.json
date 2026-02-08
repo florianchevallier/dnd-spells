@@ -56,5 +56,5 @@
     "vite-tsconfig-paths": "^5.1.4",
     "workbox-window": "^7.4.0"
   },
-  "version": "0.0.8"
+  "version": "0.0.9"
 }
